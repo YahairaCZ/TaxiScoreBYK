@@ -1,0 +1,68 @@
+se corre con npx expo start
+
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Text } from 'react-native';
+import { WebView } from 'react-native-webview';
+import * as Location from 'expo-location';
+
+const HomeScreen = () => {
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  // Obtener la ubicación
+  useEffect(() => {
+    const getLocation = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location.coords);
+    };
+
+    getLocation();
+  }, []);
+
+  // Si no tenemos la ubicación, mostrar un mensaje
+  if (errorMsg) {
+    return (
+      <View style={styles.container}>
+        <Text>{errorMsg}</Text>
+      </View>
+    );
+  }
+
+  // Si tenemos la ubicación, mostramos el WebView con el mapa
+  if (location) {
+    const mapUrl = `https://www.google.com/maps?q=${location.latitude},${location.longitude}`;
+
+    return (
+      <View style={styles.container}>
+        <WebView
+          source={{ uri: mapUrl }}
+          style={styles.webview}
+        />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text>Esperando ubicación...</Text>
+    </View>
+  );
+}
+const styles = StyleSheet.create({
+  container: {
+    width: '100%',
+    height: '50%',
+  },
+  webview: {
+    
+    width: '100%',
+    height: '5%',
+  },
+});
+
+export default HomeScreen;
